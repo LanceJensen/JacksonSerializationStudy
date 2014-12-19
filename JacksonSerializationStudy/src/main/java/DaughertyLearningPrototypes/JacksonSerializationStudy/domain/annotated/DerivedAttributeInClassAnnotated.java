@@ -1,33 +1,19 @@
-package DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases;
+package DaughertyLearningPrototypes.JacksonSerializationStudy.domain.annotated;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-public class DerivedAttributeInClass {
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-	protected int[] mNumbers = {};
+public class DerivedAttributeInClassAnnotated {
+
+	@JsonProperty("numbers")
+//	@JsonAutoDetect
+	private int[] mNumbers = {};
 	
-	private DerivedAttributeInClass() {
-		
-	}
 	
-	private DerivedAttributeInClass(int sum) throws IOException {
-		int[] fibonacciSequence = { 0, 1, 1, 2, 3, 5, 13, 89, 233, 1597};
-		int total = 0;
-		for(int i = 0; i < fibonacciSequence.length; i++) {
-			total += fibonacciSequence[i];
-			if(total == sum) {
-				mNumbers = Arrays.copyOfRange(fibonacciSequence, 0, i +1);
-				break;
-			}
-			if(total > sum) {
-				throw new IOException("Invalid State:  The sum passed is not in the fibonacciSequesce.");
-				
-			}
-		}
-	}
-	
-	public DerivedAttributeInClass(int... integers) {
+	public DerivedAttributeInClassAnnotated(int... integers) {
 		mNumbers = integers;
 	}
 	
@@ -58,7 +44,7 @@ public class DerivedAttributeInClass {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DerivedAttributeInClass other = (DerivedAttributeInClass) obj;
+		DerivedAttributeInClassAnnotated other = (DerivedAttributeInClassAnnotated) obj;
 		if (!Arrays.equals(mNumbers, other.mNumbers))
 			return false;
 		return true;

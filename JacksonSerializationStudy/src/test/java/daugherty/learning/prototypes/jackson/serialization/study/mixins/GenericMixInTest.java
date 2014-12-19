@@ -1,14 +1,40 @@
-package daugherty.learning.prototypes.jackson.serialization.study.conventional.minimum.annotations;
+package daugherty.learning.prototypes.jackson.serialization.study.mixins;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
+import junit.framework.TestCase;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+
+
+
+
+
+
+
+
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases.Animal;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases.Cat;
 import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases.DerivedAttributeInClass;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases.Dog;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases.PetOwner;
 import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.cases.ReadOnlyDto;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.mixins.AnimalInformation;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.mixins.DerivedAttributeInClassInformation;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.mixins.GenericInformation;
+import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.mixins.ReadOnlyDtoInformation;
 import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.standard.ConventionalDerivedAttributeInClass;
 import DaughertyLearningPrototypes.JacksonSerializationStudy.domain.standard.ConventionalReadOnlyDto;
 
@@ -16,7 +42,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ConventionalTest {
+public class GenericMixInTest {
 
 	private static ObjectMapper mapper;
 
@@ -25,6 +51,9 @@ public class ConventionalTest {
 		mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
 				false);
+		mapper.addMixInAnnotations(ReadOnlyDto.class, GenericInformation.class);
+		mapper.addMixInAnnotations(DerivedAttributeInClass.class, GenericInformation.class);
+		mapper.addMixInAnnotations(Animal.class, GenericInformation.class);
 	}
 
 	/**
@@ -55,43 +84,12 @@ public class ConventionalTest {
 		String inflatedJson = mapper.writeValueAsString(inflatedReadOnly);
 		System.out.println(inflatedJson);
 
-		assertFalse(readOnly.equals(inflatedReadOnly));
-	}
-
-	/**
-	 * readOnlyTestWithSetters - is a proof of concept that a read only class
-	 * can be successfully deserilized by adding the conventional setters. To
-	 * see the differences compare ConventiaonlReadOnlyDto with ReadOnlyDto.
-	 * 
-	 * @throws IOException
-	 */
-	@Test
-	public void readOnlyTestWithSetters() throws IOException {
-		// Create Standard ReadOnly object
-		ConventionalReadOnlyDto readOnly = new ConventionalReadOnlyDto("value",
-				5);
-		System.out.println("\nTo String:");
-		System.out.println(readOnly.toString());
-
-		System.out.println("\nJSON:");
-		String json = mapper.writeValueAsString(readOnly);
-		System.out.println(json);
-
-		ConventionalReadOnlyDto inflatedReadOnly = mapper.readValue(json,
-				ConventionalReadOnlyDto.class);
-		System.out.println("\nTo String:");
-		System.out.println(inflatedReadOnly.toString());
-
-		System.out.println("\nJSON:");
-		String inflatedJson = mapper.writeValueAsString(inflatedReadOnly);
-		System.out.println(inflatedJson);
-
 		assertTrue(readOnly.equals(inflatedReadOnly));
 	}
 
 	@Test
 	public void derivedAttributeTest() throws IOException {
-		// Create standard derivied attribute
+		// Create standard derived attribute
 		int[] fibonacciSequence = { 0, 1, 1, 2, 3, 5, 13, 89, 233, 1597 };
 		DerivedAttributeInClass derAttrObject = new DerivedAttributeInClass(
 				fibonacciSequence);
@@ -107,32 +105,39 @@ public class ConventionalTest {
 		System.out.println("\nJSON:");
 		String inflatedJson = mapper.writeValueAsString(inflatedDerAttrObject);
 		System.out.println(inflatedJson);
-		assertFalse(derAttrObject.equals(inflatedDerAttrObject));
-	}
-	
-	@Test
-	public void derivedAttributeTestWithSideloadConstructor() throws IOException {
-		// Create standard derivied attribute
-		int[] fibonacciSequence = { 0, 1, 1, 2, 3, 5, 13, 89, 233, 1597 };
-		ConventionalDerivedAttributeInClass derAttrObject = new ConventionalDerivedAttributeInClass(
-				fibonacciSequence);
-
-		System.out.println("\nTo String:");
-		System.out.println(derAttrObject.toString());
-
-		System.out.println("\nJSON:");
-		String json = mapper.writeValueAsString(derAttrObject);
-		System.out.println(json);
-
-		ConventionalDerivedAttributeInClass inflatedDerAttrObject = mapper.readValue(json,
-				ConventionalDerivedAttributeInClass.class);
-		System.out.println("\nTo String:");
-		System.out.println(inflatedDerAttrObject.toString());
-
-		System.out.println("\nJSON:");
-		String inflatedJson = mapper.writeValueAsString(inflatedDerAttrObject);
-		System.out.println(inflatedJson);
 		assertTrue(derAttrObject.equals(inflatedDerAttrObject));
 	}
-	
+
+	@Test
+	public void genericsTest() throws IOException {
+		PetOwner owner = new PetOwner();
+		owner.setName("Jesse Jensen");
+		ArrayList<Animal> pets = new ArrayList<Animal>();
+		Cat cat = new Cat();
+		cat.setName("Mike");
+		cat.setClawPower(10);
+		cat.setPurPower(11);
+		pets.add(cat);
+		Dog dog = new Dog();
+		dog.setName("Fido");
+		dog.setBarkPower(11);
+		dog.setBitePower(0);
+		pets.add(dog);
+		owner.setPets(pets);
+		
+		System.out.println("\nTo String:");
+		System.out.println(owner.toString());
+		System.out.println("\nJSON:");
+		String json = mapper.writeValueAsString(owner);
+		System.out.println(json);
+		PetOwner inflatedOwner = mapper.readValue(json,
+				PetOwner.class);
+		System.out.println("\nTo String:");
+		System.out.println(inflatedOwner.toString());
+		System.out.println("\nJSON:");
+		String inflatedJson = mapper.writeValueAsString(inflatedOwner);
+		System.out.println(inflatedJson);
+		assertTrue(owner.equals(inflatedOwner));
+		
+	}
 }
